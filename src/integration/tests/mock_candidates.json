@@ -1,0 +1,40 @@
+[
+  {
+    "candidate": {
+      "id": "candidate-valid",
+      "code": "def transform(row):\n    return {'id': row['id'], 'name': row['full_name'], 'email': row['email']}\n",
+      "explanation": "Map full_name to the warehouse name column"
+    },
+    "sandbox_result": {
+      "candidate_id": "candidate-valid",
+      "ran_successfully": true,
+      "row_count_before": 2,
+      "row_count_after": 2,
+      "execution_time_ms": 1.25
+    },
+    "schema_ok": true,
+    "output_rows": [
+      {"id": 1, "name": "Ada Lovelace", "email": "ada@example.com"},
+      {"id": 2, "name": "Grace Hopper", "email": "grace@example.com"}
+    ]
+  },
+  {
+    "candidate": {
+      "id": "candidate-invalid",
+      "code": "def transform(row):\n    return {'id': row['id'], 'email': row['email']}\n",
+      "explanation": "Intentionally missing name"
+    },
+    "sandbox_result": {
+      "candidate_id": "candidate-invalid",
+      "ran_successfully": true,
+      "row_count_before": 2,
+      "row_count_after": 2,
+      "execution_time_ms": 1.5
+    },
+    "schema_ok": true,
+    "output_rows": [
+      {"id": 1, "email": "ada@example.com"},
+      {"id": 2, "email": "grace@example.com"}
+    ]
+  }
+]
