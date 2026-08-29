@@ -1,0 +1,5 @@
+FROM python:3.11-slim
+RUN pip install pandas sqlalchemy psycopg2-binary
+WORKDIR /app
+COPY sandbox_entry.py .
+CMD ["python", "sandbox_entry.py"]
