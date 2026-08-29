@@ -1,21 +1,19 @@
 from dotenv import load_dotenv
-load_dotenv() 
-import os
-
-from openai import OpenAI
+load_dotenv()
+import openai, os
 from src.common.models import RepairCandidate
 from src.agent.prompts import SYSTEM_PROMPT, build_prompt
 from src.agent.agent_tools import read_pipeline_source, write_candidate_file
 from src.sandbox.docker_runner import run_in_sandbox
 
-client =OpenAI(
-    base_url="https://integrate.api.nvidia.com/v1",
-    api_key=os.getenv("NVIDIA_API_KEY"),
+client = openai.OpenAI(
+    base_url="https://api.groq.com/openai/v1",
+    api_key=os.getenv("GROQ_API_KEY"),
 )
 
 def call_llm(prompt: str) -> str:
     resp = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
+        model="qwen/qwen3.8-27b",
         max_tokens=500,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},

@@ -1,6 +1,5 @@
 {
   "id": "integer",
-  "full_name": "text",
-  "email": "text",
-  "name": "text"
+  "name": "text",
+  "email": "text"
 }

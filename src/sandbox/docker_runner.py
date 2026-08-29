@@ -1,5 +1,7 @@
-import subprocess, json
+import subprocess, json, os
 from dataclasses import dataclass
+
+NETWORK_NAME = "schema_guard_default"   # replace with your exact network name from `docker network ls`
 
 @dataclass
 class SandboxResult:
@@ -7,19 +9,28 @@ class SandboxResult:
     log: str
 
 def run_in_sandbox(candidate_id: str, code: str) -> SandboxResult:
-    path = f"data/candidates/{candidate_id}.py"
     result = subprocess.run(
         ["docker", "run", "--rm",
-         "-v", f"{__import__('os').getcwd()}\\data\\candidates:/candidates",
+         "--network", NETWORK_NAME,
+         "-v", f"{os.getcwd()}\\data\\candidates:/candidates",
          "schemaguard-sandbox", "python", "sandbox_entry.py",
          f"/candidates/{candidate_id}.py"],
         capture_output=True, text=True, timeout=30,
     )
-    output = result.stdout.strip().splitlines()
-    last_line = output[-1] if output else result.stderr
+
+    combined_output = (result.stdout + result.stderr).strip()
+    print(f"[sandbox raw output] {combined_output!r}")   # always visible now, for debugging
+
+    if not combined_output:
+        return SandboxResult(passed=False, log="Sandbox produced no output at all (check network/container).")
+
+    last_line = combined_output.strip().splitlines()[-1]
     try:
         parsed = json.loads(last_line)
         passed = parsed.get("status") == "SUCCESS"
-    except Exception:
+        log = json.dumps(parsed)
+    except json.JSONDecodeError:
         passed = False
-    return SandboxResult(passed=passed, log=last_line or result.stderr)
+        log = f"Could not parse output as JSON: {combined_output}"
+
+    return SandboxResult(passed=passed, log=log)

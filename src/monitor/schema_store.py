@@ -8,6 +8,7 @@ def get_current_schema(engine):
             SELECT column_name, data_type
             FROM information_schema.columns
             WHERE table_name = 'customers'
+              AND table_schema = 'public'
         """)).all()
     return {r[0]: r[1] for r in rows}
 
