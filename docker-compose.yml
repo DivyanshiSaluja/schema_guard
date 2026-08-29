@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: schemaguard
+      POSTGRES_PASSWORD: schemaguard
+      POSTGRES_DB: schemaguard
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/seed:/docker-entrypoint-initdb.d
