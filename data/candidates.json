@@ -1,0 +1,10 @@
+[
+  {
+    "id": "cand_name_full_name",
+    "code": "def transform(row: dict) -> dict:\n    return {\n        \"id\": row[\"id\"],\n        \"name\": row[\"full_name\"],\n        \"email\": row[\"email\"],\n    }",
+    "explanation": "Repairs RENAME on name",
+    "passed_sandbox": true,
+    "attempt": 1,
+    "sandbox_log": "{\"status\": \"SUCCESS\", \"rows_ok\": 500}"
+  }
+]
