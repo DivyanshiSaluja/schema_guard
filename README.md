@@ -44,6 +44,7 @@ This repository is an MVP. The integration entry point currently consumes precom
 - Python 3.10 or newer is recommended because the code uses modern type annotation syntax.
 - Docker Desktop or another Docker Compose implementation.
 - PostgreSQL is supplied by Docker Compose for the demo.
+- The optional LLM repair-agent scripts use the OpenAI-compatible `openai` client and require `NVIDIA_API_KEY`.
 
 Install the Python dependencies in a virtual environment:
 
@@ -61,14 +62,14 @@ Start PostgreSQL from the repository root:
 docker compose up -d db
 ```
 
-The container is published at `localhost:5433` with these demo credentials:
+The container is published at `localhost:5432` with these demo credentials:
 
 | Setting | Value |
 | --- | --- |
 | Database | `schemaguard` |
 | User | `schemaguard` |
 | Password | `schemaguard` |
-| Host port | `5433` |
+| Host port | `5432` |
 
 The initialization script creates:
 
@@ -183,10 +184,10 @@ Keep PostgreSQL running for the full suite. `src/validator/test_schema_diff.py` 
 The demo database URL is currently hardcoded in `src/common/config.py`:
 
 ```text
-postgresql://schemaguard:schemaguard@localhost:5433/schemaguard
+postgresql://schemaguard:schemaguard@localhost:5432/schemaguard
 ```
 
-The only application environment variable currently read by the code is `SCHEMAGUARD_CANDIDATES_PATH`, used by the dashboard. The credentials in Docker Compose and the configuration module are demo values and should be replaced with secret-managed configuration before production use.
+The dashboard reads `SCHEMAGUARD_CANDIDATES_PATH`. The LLM repair-agent scripts read `NVIDIA_API_KEY` through the OpenAI-compatible NVIDIA endpoint. The credentials in Docker Compose and the configuration module are demo values and should be replaced with secret-managed configuration before production use.
 
 ## Current Scope and Limitations
 
