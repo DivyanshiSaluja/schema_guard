@@ -210,3 +210,19 @@ The main extension points are:
 - `src/integration/pipeline.py` for connecting those components into a single flow.
 
 Changes to deployment or validation should be covered with the relevant focused test module before running the full suite.
+
+## Drift-Derived Reference Execution (DDRE)
+
+`src/reference/` verifies a repair against a reference path built from the schema change itself: the incumbent transformation composed with a backward mapping from the new schema to the old one. It then supervises the deployed repair on every ETL run.
+
+```bash
+python run_ddre.py baseline                     # before the source changes: catalog, probe rows, incumbent code
+python run_ddre.py detect                       # after the change: confirmed RENAME/SPLIT/MERGE/RETYPE/ADD/DROP events
+python run_ddre.py verify --candidates FILE     # JSON list of {"id", "code"}; or --generate MODEL with NVIDIA_API_KEY
+python run_ddre.py approve --candidate ID --reviewer NAME [--waive name,email]
+python run_ddre.py deploy                       # refuses if the code or live schema changed since approval
+python run_ddre.py etl [--sample 0.2]           # guarded ETL: fallback to the reference, quarantine, or halt
+```
+
+Tests: `python -m unittest src.reference.tests.test_reference`.
+Experiments: `python -m experiments.ddre_eval` (no database) and `python -m experiments.live_eval` (starts an isolated PostgreSQL container on port 55432; Docker required). Results go to `experiments/results/`.

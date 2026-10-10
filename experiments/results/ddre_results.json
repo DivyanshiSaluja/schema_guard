@@ -1,0 +1,354 @@
+{
+  "verification": [
+    {
+      "scenario": "A. Rename",
+      "candidate": "C1",
+      "note": "correct",
+      "committed_baseline": "reject",
+      "baseline_on_changed_rows": "pass",
+      "ddre": "EQUIVALENT: deployable",
+      "witness": "",
+      "upstream_in_domain": "non_empty(name) on keys [504]",
+      "domain_rows": 504,
+      "divergent_cells": 0,
+      "ms": 2.1
+    },
+    {
+      "scenario": "A. Rename",
+      "candidate": "C0",
+      "note": "stale: the committed repair",
+      "committed_baseline": "pass",
+      "baseline_on_changed_rows": "reject",
+      "ddre": "DIVERGENT: rejected",
+      "witness": "1 row(s), key [1], ('*', 'error'); read only by candidate ['full_name'], only by reference ['email', 'name']",
+      "upstream_in_domain": "",
+      "domain_rows": 504,
+      "divergent_cells": 504,
+      "ms": 18.4
+    },
+    {
+      "scenario": "A. Rename",
+      "candidate": "C2",
+      "note": "reads the wrong column",
+      "committed_baseline": "pass",
+      "baseline_on_changed_rows": "pass",
+      "ddre": "DIVERGENT: rejected",
+      "witness": "1 row(s), key [1], ('name', 'value'); read only by candidate [], only by reference ['name']",
+      "upstream_in_domain": "",
+      "domain_rows": 504,
+      "divergent_cells": 504,
+      "ms": 4.0
+    },
+    {
+      "scenario": "A. Rename",
+      "candidate": "C3",
+      "note": "turns empty names into NULL",
+      "committed_baseline": "reject",
+      "baseline_on_changed_rows": "reject",
+      "ddre": "DIVERGENT: rejected",
+      "witness": "1 row(s), key [504], ('name', 'value')",
+      "upstream_in_domain": "non_empty(name) on keys [504]",
+      "domain_rows": 504,
+      "divergent_cells": 1,
+      "ms": 1.6
+    },
+    {
+      "scenario": "A. Rename",
+      "candidate": "C4",
+      "note": "blanks names over 40 chars",
+      "committed_baseline": "reject",
+      "baseline_on_changed_rows": "pass",
+      "ddre": "DIVERGENT; invariant non_empty(name): rejected",
+      "witness": "1 row(s), key [502], ('name', 'value')",
+      "upstream_in_domain": "non_empty(name) on keys [504]",
+      "domain_rows": 504,
+      "divergent_cells": 1,
+      "ms": 2.0
+    },
+    {
+      "scenario": "A'. Rename, seed rows only",
+      "candidate": "C3",
+      "note": "turns empty names into NULL",
+      "committed_baseline": null,
+      "baseline_on_changed_rows": "pass",
+      "ddre": "EQUIVALENT: deployable",
+      "witness": "",
+      "upstream_in_domain": "",
+      "domain_rows": 500,
+      "divergent_cells": 0,
+      "ms": 1.5
+    },
+    {
+      "scenario": "A'. Rename, seed rows only",
+      "candidate": "C4",
+      "note": "blanks names over 40 chars",
+      "committed_baseline": null,
+      "baseline_on_changed_rows": "pass",
+      "ddre": "EQUIVALENT: deployable",
+      "witness": "",
+      "upstream_in_domain": "",
+      "domain_rows": 500,
+      "divergent_cells": 0,
+      "ms": 4.8
+    },
+    {
+      "scenario": "B. Add column",
+      "candidate": "A1",
+      "note": "incumbent unchanged",
+      "committed_baseline": null,
+      "baseline_on_changed_rows": "pass",
+      "ddre": "EQUIVALENT: deployable",
+      "witness": "",
+      "upstream_in_domain": "non_empty(name) on keys [504]",
+      "domain_rows": 504,
+      "divergent_cells": 0,
+      "ms": 1.5
+    },
+    {
+      "scenario": "B. Add column",
+      "candidate": "A2",
+      "note": "writes phone into email",
+      "committed_baseline": null,
+      "baseline_on_changed_rows": "pass",
+      "ddre": "DIVERGENT: rejected",
+      "witness": "1 row(s), key [1], ('email', 'value'); read only by candidate ['phone'], only by reference ['email']",
+      "upstream_in_domain": "non_empty(name) on keys [504]",
+      "domain_rows": 504,
+      "divergent_cells": 504,
+      "ms": 1.9
+    },
+    {
+      "scenario": "B. Add column",
+      "candidate": "A3",
+      "note": "adds an output field",
+      "committed_baseline": null,
+      "baseline_on_changed_rows": "pass",
+      "ddre": "DIVERGENT: rejected",
+      "witness": "1 row(s), key [1], ('phone', 'extra'); read only by candidate ['phone'], only by reference []",
+      "upstream_in_domain": "non_empty(name) on keys [504]",
+      "domain_rows": 504,
+      "divergent_cells": 504,
+      "ms": 1.7
+    },
+    {
+      "scenario": "C. Retype id",
+      "candidate": "R1",
+      "note": "casts back to integer",
+      "committed_baseline": null,
+      "baseline_on_changed_rows": "pass",
+      "ddre": "EQUIVALENT: deployable",
+      "witness": "",
+      "upstream_in_domain": "non_empty(name) on keys ['504']",
+      "domain_rows": 504,
+      "divergent_cells": 0,
+      "ms": 1.7
+    },
+    {
+      "scenario": "C. Retype id",
+      "candidate": "R2",
+      "note": "keeps text id",
+      "committed_baseline": null,
+      "baseline_on_changed_rows": "reject",
+      "ddre": "DIVERGENT: rejected",
+      "witness": "1 row(s), key ['1'], ('id', 'value')",
+      "upstream_in_domain": "non_empty(name) on keys ['504']",
+      "domain_rows": 504,
+      "divergent_cells": 504,
+      "ms": 1.8
+    },
+    {
+      "scenario": "D. Drop column",
+      "candidate": "D1",
+      "note": "writes NULL email",
+      "committed_baseline": null,
+      "baseline_on_changed_rows": "reject",
+      "ddre": "UNVERIFIABLE; invariant not_null(email): rejected",
+      "witness": "1 row(s), key [1], ('email', 'not_null'); read only by candidate [], only by reference ['email']",
+      "upstream_in_domain": "non_empty(name) on keys [504]",
+      "domain_rows": 504,
+      "divergent_cells": 0,
+      "ms": 1.5
+    },
+    {
+      "scenario": "D. Drop column",
+      "candidate": "D2",
+      "note": "writes a placeholder email",
+      "committed_baseline": null,
+      "baseline_on_changed_rows": "pass",
+      "ddre": "UNVERIFIABLE ['email']: waiver needed",
+      "witness": "",
+      "upstream_in_domain": "non_empty(name) on keys [504]",
+      "domain_rows": 504,
+      "divergent_cells": 0,
+      "ms": 1.5
+    },
+    {
+      "scenario": "E. Ambiguous rename",
+      "candidate": "C1",
+      "note": "correct if name is the rename",
+      "committed_baseline": null,
+      "baseline_on_changed_rows": "pass",
+      "ddre": "UNVERIFIABLE; invariant non_empty(name): rejected",
+      "witness": "1 row(s), key [504], ('name', 'non_empty'); read only by candidate ['name'], only by reference ['full_name']",
+      "upstream_in_domain": "",
+      "domain_rows": 504,
+      "divergent_cells": 0,
+      "ms": 1.6
+    }
+  ],
+  "attribution": [
+    {
+      "case": "C1 deployed; 3 upstream rows arrive with NULL name",
+      "action": "QUARANTINE",
+      "quarantined": [
+        11,
+        12,
+        13
+      ],
+      "per_invariant": [
+        {
+          "invariant": "unique(id)",
+          "attribution": "NO_FAULT",
+          "action": "CONTINUE",
+          "candidate_keys": [],
+          "reference_keys": []
+        },
+        {
+          "invariant": "not_null(id)",
+          "attribution": "NO_FAULT",
+          "action": "CONTINUE",
+          "candidate_keys": [],
+          "reference_keys": []
+        },
+        {
+          "invariant": "non_empty(name)",
+          "attribution": "UPSTREAM_INDUCED",
+          "action": "QUARANTINE",
+          "candidate_keys": [
+            11,
+            12,
+            13
+          ],
+          "reference_keys": [
+            11,
+            12,
+            13
+          ]
+        },
+        {
+          "invariant": "not_null(email)",
+          "attribution": "NO_FAULT",
+          "action": "CONTINUE",
+          "candidate_keys": [],
+          "reference_keys": []
+        }
+      ]
+    },
+    {
+      "case": "C4 deployed; 5 rows with names over 40 chars",
+      "action": "ACTIVATE_REFERENCE",
+      "quarantined": [],
+      "per_invariant": [
+        {
+          "invariant": "unique(id)",
+          "attribution": "NO_FAULT",
+          "action": "CONTINUE",
+          "candidate_keys": [],
+          "reference_keys": []
+        },
+        {
+          "invariant": "not_null(id)",
+          "attribution": "NO_FAULT",
+          "action": "CONTINUE",
+          "candidate_keys": [],
+          "reference_keys": []
+        },
+        {
+          "invariant": "non_empty(name)",
+          "attribution": "CANDIDATE_INDUCED",
+          "action": "ACTIVATE_REFERENCE",
+          "candidate_keys": [
+            901,
+            902,
+            903,
+            904,
+            905
+          ],
+          "reference_keys": []
+        },
+        {
+          "invariant": "not_null(email)",
+          "attribution": "NO_FAULT",
+          "action": "CONTINUE",
+          "candidate_keys": [],
+          "reference_keys": []
+        }
+      ]
+    },
+    {
+      "case": "Buggy incumbent (health check flags ['non_empty(name)']); same upstream batch",
+      "action": "HALT_FIELD",
+      "quarantined": [],
+      "per_invariant": [
+        {
+          "invariant": "unique(id)",
+          "attribution": "NO_FAULT",
+          "action": "CONTINUE",
+          "candidate_keys": [],
+          "reference_keys": []
+        },
+        {
+          "invariant": "not_null(id)",
+          "attribution": "NO_FAULT",
+          "action": "CONTINUE",
+          "candidate_keys": [],
+          "reference_keys": []
+        },
+        {
+          "invariant": "non_empty(name)",
+          "attribution": "INDETERMINATE",
+          "action": "HALT_FIELD",
+          "candidate_keys": [
+            11,
+            12,
+            13
+          ],
+          "reference_keys": []
+        },
+        {
+          "invariant": "not_null(email)",
+          "attribution": "NO_FAULT",
+          "action": "CONTINUE",
+          "candidate_keys": [],
+          "reference_keys": []
+        }
+      ]
+    }
+  ],
+  "snapshot_rollback_failures": [
+    200,
+    200
+  ],
+  "freshness": [
+    {
+      "case": "Same code, reformatted",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "case": "Different code (C2) written instead",
+      "ok": false,
+      "reasons": [
+        "artifact differs from the approved candidate"
+      ]
+    },
+    {
+      "case": "Second drift after approval (email renamed)",
+      "ok": false,
+      "reasons": [
+        "live source schema changed after approval"
+      ]
+    }
+  ],
+  "evidence_digest": "6170c098a5c2fbc3246bfbbd87ba4ad5f5232700884cd878285b700b0975ad43"
+}

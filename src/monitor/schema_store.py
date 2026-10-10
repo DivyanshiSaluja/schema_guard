@@ -7,7 +7,7 @@ def get_current_schema(engine):
         rows = c.execute(text("""
             SELECT column_name, data_type
             FROM information_schema.columns
-            WHERE table_name = 'customers'
+            WHERE table_schema = 'public' AND table_name = 'customers'
         """)).all()
     return {r[0]: r[1] for r in rows}
 

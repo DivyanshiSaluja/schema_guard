@@ -1,4 +1,6 @@
-import subprocess, json
+import json
+import os
+import subprocess
 from dataclasses import dataclass
 
 @dataclass
@@ -7,10 +9,11 @@ class SandboxResult:
     log: str
 
 def run_in_sandbox(candidate_id: str, code: str) -> SandboxResult:
-    path = f"data/candidates/{candidate_id}.py"
+    candidates_dir = os.path.join(os.getcwd(), "data", "candidates")
     result = subprocess.run(
-        ["docker", "run", "--rm",
-         "-v", f"{__import__('os').getcwd()}\\data\\candidates:/candidates",
+        ["docker", "run", "--rm", "--network", "none", "--read-only",
+         "--memory", "256m", "--cpus", "1",
+         "-v", f"{candidates_dir}:/candidates:ro",
          "schemaguard-sandbox", "python", "sandbox_entry.py",
          f"/candidates/{candidate_id}.py"],
         capture_output=True, text=True, timeout=30,
