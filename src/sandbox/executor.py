@@ -24,6 +24,8 @@ DEFAULT_TEST_DATA = (
 
 _SAFE_BUILTINS = {"bool": bool, "float": float, "int": int, "len": len, "str": str}
 _ALLOWED_CALLS = frozenset(_SAFE_BUILTINS)
+# String methods a transformation may call; any other attribute is rejected.
+_ALLOWED_METHODS = frozenset({"split", "strip", "lower", "upper", "title", "replace"})
 _ALLOWED_NODES = (
     ast.Module,
     ast.FunctionDef,
@@ -46,6 +48,7 @@ _ALLOWED_NODES = (
     ast.Compare,
     ast.IfExp,
     ast.Call,
+    ast.Attribute,
     ast.keyword,
     ast.Add,
     ast.Sub,
@@ -96,8 +99,17 @@ class _CandidateValidator(ast.NodeVisitor):
             raise UnsafeCandidateError("dunder names are not allowed")
         self.generic_visit(node)
 
+    def visit_Attribute(self, node: ast.Attribute) -> None:
+        if node.attr not in _ALLOWED_METHODS:
+            raise UnsafeCandidateError(f"attribute not allowed: {node.attr}")
+        self.generic_visit(node)
+
     def visit_Call(self, node: ast.Call) -> None:
-        if not isinstance(node.func, ast.Name) or node.func.id not in _ALLOWED_CALLS:
+        allowed_function = isinstance(node.func, ast.Name) and node.func.id in _ALLOWED_CALLS
+        allowed_method = (
+            isinstance(node.func, ast.Attribute) and node.func.attr in _ALLOWED_METHODS
+        )
+        if not (allowed_function or allowed_method):
             raise UnsafeCandidateError("only approved pure helper functions may be called")
         self.generic_visit(node)
 

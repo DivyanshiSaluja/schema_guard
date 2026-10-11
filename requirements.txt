@@ -2,5 +2,6 @@ psycopg2-binary
 pandas
 sqlalchemy
 anthropic
+openai
 streamlit
 python-dotenv

@@ -44,6 +44,7 @@ This repository is an MVP. The integration entry point currently consumes precom
 - Python 3.10 or newer is recommended because the code uses modern type annotation syntax.
 - Docker Desktop or another Docker Compose implementation.
 - PostgreSQL is supplied by Docker Compose for the demo.
+- The optional LLM repair-agent scripts use the OpenAI-compatible `openai` client and require `NVIDIA_API_KEY`.
 
 Install the Python dependencies in a virtual environment:
 
@@ -61,14 +62,14 @@ Start PostgreSQL from the repository root:
 docker compose up -d db
 ```
 
-The container is published at `localhost:5433` with these demo credentials:
+The container is published at `localhost:5432` with these demo credentials:
 
 | Setting | Value |
 | --- | --- |
 | Database | `schemaguard` |
 | User | `schemaguard` |
 | Password | `schemaguard` |
-| Host port | `5433` |
+| Host port | `5432` |
 
 The initialization script creates:
 
@@ -183,10 +184,10 @@ Keep PostgreSQL running for the full suite. `src/validator/test_schema_diff.py` 
 The demo database URL is currently hardcoded in `src/common/config.py`:
 
 ```text
-postgresql://schemaguard:schemaguard@localhost:5433/schemaguard
+postgresql://schemaguard:schemaguard@localhost:5432/schemaguard
 ```
 
-The only application environment variable currently read by the code is `SCHEMAGUARD_CANDIDATES_PATH`, used by the dashboard. The credentials in Docker Compose and the configuration module are demo values and should be replaced with secret-managed configuration before production use.
+The dashboard reads `SCHEMAGUARD_CANDIDATES_PATH`. The LLM repair-agent scripts read `NVIDIA_API_KEY` through the OpenAI-compatible NVIDIA endpoint. The credentials in Docker Compose and the configuration module are demo values and should be replaced with secret-managed configuration before production use.
 
 ## Current Scope and Limitations
 
@@ -209,3 +210,19 @@ The main extension points are:
 - `src/integration/pipeline.py` for connecting those components into a single flow.
 
 Changes to deployment or validation should be covered with the relevant focused test module before running the full suite.
+
+## Drift-Derived Reference Execution (DDRE)
+
+`src/reference/` verifies a repair against a reference path built from the schema change itself: the incumbent transformation composed with a backward mapping from the new schema to the old one. It then supervises the deployed repair on every ETL run.
+
+```bash
+python run_ddre.py baseline                     # before the source changes: catalog, probe rows, incumbent code
+python run_ddre.py detect                       # after the change: confirmed RENAME/SPLIT/MERGE/RETYPE/ADD/DROP events
+python run_ddre.py verify --candidates FILE     # JSON list of {"id", "code"}; or --generate MODEL with NVIDIA_API_KEY
+python run_ddre.py approve --candidate ID --reviewer NAME [--waive name,email]
+python run_ddre.py deploy                       # refuses if the code or live schema changed since approval
+python run_ddre.py etl [--sample 0.2]           # guarded ETL: fallback to the reference, quarantine, or halt
+```
+
+Tests: `python -m unittest src.reference.tests.test_reference`.
+Experiments: `python -m experiments.ddre_eval` (no database) and `python -m experiments.live_eval` (starts an isolated PostgreSQL container on port 55432; Docker required). Results go to `experiments/results/`.

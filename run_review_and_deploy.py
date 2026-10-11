@@ -28,31 +28,29 @@ candidates = [
     for c in raw_candidates
 ]
 
-# 2. Synthesize SandboxResult + ValidationReport from the flat data
-# (your pipeline doesn't track these as separate checks yet, so derive them
-#  from passed_sandbox — this is the honest bridging point between the two halves)
-sandbox_results = [
-    SandboxResult(
-        candidate_id=c.id,
-        ran_successfully=c.passed_sandbox,
-        row_count_before=500,
-        row_count_after=500 if c.passed_sandbox else 0,
-        execution_time_ms=0.0,
-        error_log="" if c.passed_sandbox else c.sandbox_log,
-    )
-    for c in candidates
-]
+# 2. Measure each candidate on the live source rows, in their current
+# (post-drift) shape, instead of deriving results from passed_sandbox.
+from sqlalchemy import create_engine, text
+from src.common.config import DB_URL
+from src.sandbox.executor import execute_candidate, _compile_transform
+from src.validator.data_quality import validate_data_quality
+from src.validator.ranking import rank_candidates
+from src.validator.report import build_validation_report
 
-reports = [
-    ValidationReport(
-        candidate_id=c.id,
-        schema_ok=True,
-        data_quality_ok=c.passed_sandbox,
-        confidence_score=100.0 if c.passed_sandbox else 0.0,
-        ranked_position=1,
-    )
-    for c in candidates
-]
+with create_engine(DB_URL).connect() as conn:
+    live_rows = [dict(r) for r in conn.execute(text("SELECT * FROM public.customers")).mappings()]
+
+sandbox_results, reports = [], []
+for c in candidates:
+    result = execute_candidate(c, live_rows)
+    output_rows = []
+    if result.ran_successfully:
+        transform = _compile_transform(c.code)
+        output_rows = [transform(dict(row)) for row in live_rows]
+    quality = validate_data_quality(output_rows, result)
+    sandbox_results.append(result)
+    reports.append(build_validation_report(c.id, quality.schema_ok, quality, result))
+reports = rank_candidates(reports)
 
 # 3. Build review state using their actual API
 items = build_review_items(candidates, reports, sandbox_results)
